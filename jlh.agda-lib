@@ -1,0 +1,4 @@
+name: JlhAgda
+include: .
+depend: cubical-0.3
+flags: --cubical --no-import-sorts
