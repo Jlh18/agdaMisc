@@ -17,7 +17,7 @@ open NatTrans
 open NatIso
 open isIso
 
-private -- Haskell notation
+private -- Haskell notation (could this be put somewhere in the library?)
 
    application : {u v : Level} {A : Type u} {B : A → Type v} (f : (a : A) → B a) (a : A) → B a
    application f a = f a
@@ -60,14 +60,14 @@ module _ {uJO uJH uCO uCH : Level}
   F-seq (constDiagram c) _ _ = sym $ C .⋆IdL _
 
   -- Cones over diagram D with summit c are natural transformations from the summit to D
-  cone[_,_] : (c : C .ob) (D : Functor J C) → Type _
-  cone[ c , D ] = NatTrans (constDiagram c) D
+  Cone[_,_] : (c : C .ob) (D : Functor J C) → Type _
+  Cone[ c , D ] = NatTrans (constDiagram c) D
 
   -- Taking cones over diagram D extends to a functor into SET
-  cone : ⦃ catC : isCategory C ⦄ (D : Functor J C) → Functor (C ^op) (SET _)
+  CONE : ⦃ catC : isCategory C ⦄ (D : Functor J C) → Functor (C ^op) (SET _)
   -- Send c ∈ C to set of cones over D with summit c
-  F-ob (cone D) c = cone[ c , D ] , isSetNat
-  F-hom (cone D) f = λ ν → natTrans (λ j → f ⋆⟨ C ⟩  ν .N-ob j)
+  F-ob (CONE D) c = Cone[ c , D ] , isSetNat
+  F-hom (CONE D) f = λ ν → natTrans (λ j → f ⋆⟨ C ⟩  ν .N-ob j)
     (
       λ g →
         C .id _ ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ ν .N-ob _)
@@ -80,9 +80,9 @@ module _ {uJO uJH uCO uCH : Level}
       ≡⟨ sym (C .⋆Assoc _ _ _) ⟩
         (f ⋆⟨ C ⟩ ν .N-ob _) ⋆⟨ C ⟩ D .F-hom g ∎
     )
-  F-id (cone D) =
+  F-id (CONE D) =
     funExt $ λ ν → makeNatTransPath $ funExt λ j → C .⋆IdL _
-  F-seq (cone D) f g =
+  F-seq (CONE D) f g =
     funExt $ λ ν → makeNatTransPath $ funExt
       λ j → (f ⋆⟨ C ^op ⟩ g) ⋆⟨ C ⟩ (ν .N-ob j)
            ≡⟨ refl ⟩
@@ -90,12 +90,12 @@ module _ {uJO uJH uCO uCH : Level}
            ≡⟨ C .⋆Assoc _ _ _ ⟩
              g ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ (ν .N-ob j)) ∎
 
--- lim is the limit of diagram D when it represents the functor (cone D)
+-- lim is the limit of diagram D when it represents the functor (CONE D)
 _isLimitOver_ : {uJO uJH uCO : Level} {J : Precategory uJO uJH}
   {C : Precategory uCO (ℓ-max uJO uJH)} -- J is smaller than hom sets of C
   ⦃ catC : isCategory C ⦄
   (lim : C .ob) (D : Functor J C) → Type (ℓ-max uCO (ℓ-suc (ℓ-max uJO uJH)))
-lim isLimitOver D = lim reps cone D
+lim isLimitOver D = lim reps CONE D
 
 record isComplete (uJO uJH : Level) {uCO : Level}
   (C : Precategory uCO (ℓ-max uJO uJH)) -- J is smaller than hom sets of C
@@ -118,12 +118,12 @@ module _ {uJO uJH : Level}
     Comp f g a = g (f a)
 
   -- Construction of object which is limit of any diagram D
-  -- Idea : lim ≅ SET[ SETFinal , lim ] ≅ cone[ SETFinal , D ]
+  -- Idea : lim ≅ SET[ SETFinal , lim ] ≅ Cone[ SETFinal , D ]
   SETLim : SET u .ob
-  SETLim = cone[ SETFinal u , D ] , isSetNat
+  SETLim = Cone[ SETFinal u , D ] , isSetNat
 
   -- Promoting SETLim to a cone
-  SETLimCone : cone[ SETLim , D ]
+  SETLimCone : Cone[ SETLim , D ]
   -- for each object j : J, give map : SETLim → D j by taking NatTrans ν ↦ νⱼ
   N-ob SETLimCone j = λ ν → ν .N-ob j tt*
   -- for each map ϕ : j → k, give commuting square
@@ -138,9 +138,9 @@ module _ {uJO uJH : Level}
       Comp (N-ob SETLimCone j) (D .F-hom ϕ) ∎
 
   -- Maps forwards and backwards on objects - forwards
-  isLimSETLimFun : (X : SET u .ob) →  SET u [ X , SETLim ] → cone[ X , D ]
+  isLimSETLimFun : (X : SET u .ob) →  SET u [ X , SETLim ] → Cone[ X , D ]
   -- for each set X, a map SET [ X , SETLim ] → SET^J [ constDiagram X , D ]
-  --                    by         f          ↦  j  ↦ f ⋆ (cone map from SETLim → D j)
+  --                    by         f          ↦  j  ↦ f ⋆ (CONE map from SETLim → D j)
   N-ob (isLimSETLimFun X f) j =
     -- f ⋆ SETLimCone .N-ob k
     Comp f (SETLimCone .N-ob j)
@@ -162,7 +162,7 @@ module _ {uJO uJH : Level}
       Comp (Comp f (SETLimCone .N-ob j)) (D .F-hom ϕ) ∎
 
   -- Maps forwards and backwards on objects - backwards
-  isLimSETLimInv : (X : SET u .ob) → cone[ X , D ] → SET u [ X , SETLim ]
+  isLimSETLimInv : (X : SET u .ob) → Cone[ X , D ] → SET u [ X , SETLim ]
   N-ob (isLimSETLimInv X ν x) j tt* = ν .N-ob j x
   N-hom (isLimSETLimInv X ν x) {j} {k} ϕ =
     -- (isLimSETLimInv X ν x) k ≡ (isLimSETLimInv X ν x) j ⋆ D ϕ
@@ -172,7 +172,7 @@ module _ {uJO uJH : Level}
       Comp (isLimSETLimInv X ν x .N-ob j) (D .F-hom ϕ) ∎
 
   -- Promotes isLimSETLimFun into a natural transformation
-  isLimSETLimNatTrans : NatTrans (yo SETLim) (cone D)
+  isLimSETLimNatTrans : NatTrans (yo SETLim) (CONE D)
   N-ob isLimSETLimNatTrans = isLimSETLimFun
   -- Naturality : coYo SETLim h ⋆ isLimSETLimFun Y ≡ isLimSETLimFun X ⋆ ConesOver D X
   N-hom isLimSETLimNatTrans {X} {Y} h =
@@ -183,11 +183,11 @@ module _ {uJO uJH : Level}
            isLimSETLimFun Y (Comp h f)
          ≡⟨ makeNatTransPath $ funExt (λ j →
              sym $ SET u .⋆Assoc {Y} {X} {SETLim} {D .F-ob j} h f (SETLimCone .N-ob j)) ⟩
-           -- (cone D h ⋆ isLimSETLimFun X) f
-           cone D .F-hom {X} {Y} h (isLimSETLimFun X f) ∎
+           -- (CONE D h ⋆ isLimSETLimFun X) f
+           CONE D .F-hom {X} {Y} h (isLimSETLimFun X f) ∎
     ) ⟩
       -- isLimSETLimFun X ⋆ ConesOver D X
-      Comp (isLimSETLimFun X) (cone D .F-hom {X} {Y} h) ∎
+      Comp (isLimSETLimFun X) (CONE D .F-hom {X} {Y} h) ∎
 
   -- Promotes SETLim to an isomorphism
   isLimSETLim : SETLim isLimitOver D
