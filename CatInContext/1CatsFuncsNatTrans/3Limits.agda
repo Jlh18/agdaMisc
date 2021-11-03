@@ -1,10 +1,3 @@
--- Plan
---
--- Limit
--- |- Cone
--- |- Representable
---    |- Yoneda embedding / Category of elements
-
 module CatInContext.1CatsFuncsNatTrans.3Limits where
 
 open import Cubical.Foundations.Prelude
@@ -122,14 +115,14 @@ module _ {uJO uJH : Level}
       -- SETLimIsCone j ⋆ D ϕ
       Comp (N-ob SETLimIsCone j) (D .F-hom ϕ) ∎
 
-  SETLimIsLimNatTransOb : (X : SET u .ob) →  SET u [ X , SETLim ] → X isConeOver D
+  isLimSETLimNatTransOb : (X : SET u .ob) →  SET u [ X , SETLim ] → X isConeOver D
   -- for each set X, a map SET [ X , SETLim ] → SET^J [ constDiagram X , D ]
   --                    by         f          ↦  j  ↦ f ⋆ (cone map from SETLim → D j)
-  N-ob (SETLimIsLimNatTransOb X f) j =
+  N-ob (isLimSETLimNatTransOb X f) j =
     -- f ⋆ SETLimIsCone .N-ob k
     Comp f (SETLimIsCone .N-ob j)
   -- Naturality of above map as a functor J → Set{!!}
-  N-hom (SETLimIsLimNatTransOb X f) {j} {k} ϕ =
+  N-hom (isLimSETLimNatTransOb X f) {j} {k} ϕ =
       -- 𝟙 ⋆ f ⋆ SETLimIsCone .N-ob k
       Comp (SET u .id X) (Comp f (SETLimIsCone .N-ob k))
     ≡⟨ SET u .⋆IdL {X} {D .F-ob k} _ ⟩
@@ -148,35 +141,39 @@ module _ {uJO uJH : Level}
   open NatIso
   open isIso
 
-  SETLimIsLimNatTrans : NatTrans (coYo SETLim) (conesOver D)
-  N-ob SETLimIsLimNatTrans = SETLimIsLimNatTransOb
-  -- Naturality : coYo SETLim h ⋆ SETLimIsLimNatTransOb Y
-  --            ≡ SETLimIsLimNatTransOb X ⋆ ConesOver D X
-  N-hom SETLimIsLimNatTrans {X} {Y} h =
-      -- coYo SETLim h ⋆ SETLimIsLimNatTransOb Y
-      Comp (coYo SETLim .F-hom {X} {Y} h) (SETLimIsLimNatTransOb Y)
+  isLimSETLimNatTrans : NatTrans (coYo SETLim) (conesOver D)
+  N-ob isLimSETLimNatTrans = isLimSETLimNatTransOb
+  -- Naturality : coYo SETLim h ⋆ isLimSETLimNatTransOb Y
+  --            ≡ isLimSETLimNatTransOb X ⋆ ConesOver D X
+  N-hom isLimSETLimNatTrans {X} {Y} h =
+      -- coYo SETLim h ⋆ isLimSETLimNatTransOb Y
+      Comp (coYo SETLim .F-hom {X} {Y} h) (isLimSETLimNatTransOb Y)
     ≡⟨ funExt (λ f →
-           -- (coYo SETLim h ⋆ SETLimIsLimNatTransOb Y) f
-           SETLimIsLimNatTransOb Y (Comp h f)
+           -- (coYo SETLim h ⋆ isLimSETLimNatTransOb Y) f
+           isLimSETLimNatTransOb Y (Comp h f)
          ≡⟨ makeNatTransPath $ funExt (λ j →
              sym $ SET u .⋆Assoc {Y} {X} {SETLim} {D .F-ob j} h f (SETLimIsCone .N-ob j)) ⟩
-           -- (conesOver D h ⋆ SETLimIsLimNatTransOb X) f
-           conesOver D .F-hom {X} {Y} h (SETLimIsLimNatTransOb X f) ∎
+           -- (conesOver D h ⋆ isLimSETLimNatTransOb X) f
+           conesOver D .F-hom {X} {Y} h (isLimSETLimNatTransOb X f) ∎
 
     ) ⟩
-      -- SETLimIsLimNatTransOb X ⋆ ConesOver D X
-      Comp (SETLimIsLimNatTransOb X) (conesOver D .F-hom {X} {Y} h) ∎
+      -- isLimSETLimNatTransOb X ⋆ ConesOver D X
+      Comp (isLimSETLimNatTransOb X) (conesOver D .F-hom {X} {Y} h) ∎
 
-  SETLimIsLimInv : (X : SET u .ob) → X isConeOver D → SET u [ X , SETLim ]
-  N-ob (SETLimIsLimInv X ν x) j tt* = ν .N-ob j x
-  N-hom (SETLimIsLimInv X ν x) {j} {k} ϕ =
-    -- (SETLimIsLimInv X ν x) k t ≡ (SETLimIsLimInv X ν x) j ⋆ D ϕ t
-      (SETLimIsLimInv X ν x) .N-ob k
+  isLimSETLimInv : (X : SET u .ob) → X isConeOver D → SET u [ X , SETLim ]
+  N-ob (isLimSETLimInv X ν x) j tt* = ν .N-ob j x
+  N-hom (isLimSETLimInv X ν x) {j} {k} ϕ =
+    -- (isLimSETLimInv X ν x) k t ≡ (isLimSETLimInv X ν x) j ⋆ D ϕ t
+      (isLimSETLimInv X ν x) .N-ob k
     ≡⟨ cong (Comp λ t → x) (ν .N-hom ϕ) ⟩
-      Comp (SETLimIsLimInv X ν x .N-ob j) (D .F-hom ϕ) ∎
+      Comp (isLimSETLimInv X ν x .N-ob j) (D .F-hom ϕ) ∎
 
-  SETLimIsLim : SETLim isLimitOver D
-  NatIso.trans SETLimIsLim = SETLimIsLimNatTrans
-  inv (nIso SETLimIsLim X) = SETLimIsLimInv X
-  sec (nIso SETLimIsLim X) = funExt (λ c → makeNatTransPath refl)
-  ret (nIso SETLimIsLim X) = funExt λ f → funExt λ x → makeNatTransPath refl
+  isLimSETLim : SETLim isLimitOver D
+  NatIso.trans isLimSETLim = isLimSETLimNatTrans
+  inv (nIso isLimSETLim X) = isLimSETLimInv X
+  sec (nIso isLimSETLim X) = funExt (λ c → makeNatTransPath refl)
+  ret (nIso isLimSETLim X) = funExt λ f → funExt λ x → makeNatTransPath refl
+
+isCompleteSET : {uJO uJH : Level} → isComplete uJO uJH (SET (ℓ-max uJO uJH))
+isComplete.lim isCompleteSET = SETLim
+isComplete.isLim isCompleteSET = isLimSETLim
