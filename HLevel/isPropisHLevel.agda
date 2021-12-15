@@ -3,6 +3,7 @@ module HLevel.isPropisHLevel where
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
+open import Cubical.Foundations.GroupoidLaws
 
 private
   variable
@@ -24,3 +25,4 @@ isPropisContr (a0 , p0) (a1 , p1) i = (p0 a1 i) , λ y j →
 
 isPropisProp : {A : Type u} → isProp (isProp A)
 isPropisProp h0 h1 = funExt (λ x → funExt (λ y → isProp→isSet h0 x y (h0 x y) (h1 x y)))
+

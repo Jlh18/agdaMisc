@@ -110,6 +110,68 @@ rwe : (x : S¹) → bundle x → base ≡ x
 rwe base = {!!}
 rwe (loop i) = {!!}
 
+{-
+
+private
+  variable
+    ℓ : Level
+
+transport→ : {A B : I → Type ℓ} (f : A i0 → B i0) (x : A i0) →
+  transport (λ i → A i → B i) f (transport (λ i → A i) x) ≡ transport (λ i → B i) (f x)
+transport→ {A = A} {B = B} f x =
+  J
+  (λ A1 A →
+    transport (λ i → A i → B i) f (transport (λ i → A i) x) ≡ transport (λ i → B i) (f x))
+  (J
+    (λ B1 B →
+      transport (λ i → A i0 → B i) f (transport (λ i → A i0) x) ≡ transport (λ i → B i) (f x))
+   (
+       transport (λ i → A i0 → B i0) f (transport (λ i → A i0) x)
+     ≡⟨ cong (transport (λ i → A i0 → B i0) f) (transportRefl x) ⟩
+       transport (λ i → A i0 → B i0) f x
+     ≡⟨ cong (λ g → g x) (transportRefl f) ⟩
+       f x
+     ≡⟨ sym (transportRefl (f x)) ⟩
+       transport (λ i → B i0) (f x) ∎
+   )
+    λ i → B i
+  )
+  λ i → A i
+  -- J (λ A1 A → transport (λ i → A i → B i) f ≡ λ a1 → transport B (f (transport (sym A) a1)))
+  -- (funExt (λ a1 → refl)) A
+-}
+
+transport→' : {A0 A1 B0 B1 : Type} {A : A0 ≡ A1} {B : B0 ≡ B1} (f : A0 → B0) →
+  transport (λ i → A i → B i) f ≡ λ a1 → transport B (f (transport (sym A) a1))
+transport→' {A = A} {B = B} f = refl
+
+{-
+pathToFun→ : {A0 A1 B0 B1 : Type} {A : A0 ≡ A1} {B : B0 ≡ B1} (f : A0 → B0) →
+  pathToFun (λ i → A i → B i) f ≡ λ a1 → pathToFun B (f (pathToFun (sym A) a1))
+pathToFun→ {A = A} {B = B} f =
+  J (λ A1 A → pathToFun (λ i → A i → B i) f ≡ λ a1 → pathToFun B (f (pathToFun (sym A) a1)))
+  refl A
+
+pathToFun→' : {A0 A1 B0 B1 : Type} {A : A0 ≡ A1} {B : B0 ≡ B1} (f : A0 → B0) →
+  pathToFun (λ i → A i → B i) f ≡ λ a1 → pathToFun B (f (pathToFun (sym A) a1))
+pathToFun→' {A0} {A1} {B0} {B1} {A} {B} f =
+  J (λ A1 A → pathToFun (λ i → A i → B i) f ≡ λ a1 → pathToFun B (f (pathToFun (sym A) a1)))
+  (
+    J (λ B1 B → pathToFun (λ i → A0 → B i) f ≡ λ a → pathToFun B (f (pathToFun refl a)))
+    (
+      funExt λ a →
+        pathToFun refl f a
+      ≡⟨ cong (λ g → g a) (pathToFunRefl f) ⟩
+        f a
+      ≡⟨ sym (pathToFunRefl (f a)) ⟩
+        pathToFun refl (f a)
+      ≡⟨ cong (λ x → pathToFun refl (f x)) (sym (pathToFunRefl a)) ⟩
+        pathToFun refl (f (pathToFun refl a)) ∎
+    )
+    B
+  )
+  A -}
+
 
 rewind : (x : S¹) → bundle x → base ≡ x
 rewind = S¹Rec loop^_ (
@@ -164,8 +226,8 @@ funLoop^ (negsuc (suc n)) =
 rewindFun : (x : S¹) → (p : base ≡ x) → rewind x (fun x p) ≡ p
 rewindFun x = J (λ x p → rewind x (fun x p) ≡ p) refl
 
-funInv : (x : S¹) → (c : bundle x) → fun x (rewind x c) ≡ c
-funInv x = S¹Rec {M = λ x → (c : bundle x) → fun x (rewind x c) ≡ c}
+funRewind : (x : S¹) → (c : bundle x) → fun x (rewind x c) ≡ c
+funRewind x = S¹Rec {M = λ x → (c : bundle x) → fun x (rewind x c) ≡ c}
   funLoop^ (Iso.inv (PathPIsoPath _ _ _) (funExt λ n → isSetℤ _ _ _ _)) x
 
 ΩS¹ = base ≡ base
@@ -173,7 +235,7 @@ funInv x = S¹Rec {M = λ x → (c : bundle x) → fun x (rewind x c) ≡ c}
 ΩS¹Isoℤ : Iso (ΩS¹) ℤ
 Iso.fun ΩS¹Isoℤ = fun base
 Iso.inv ΩS¹Isoℤ = rewind base
-Iso.rightInv ΩS¹Isoℤ = funInv base
+Iso.rightInv ΩS¹Isoℤ = funRewind base
 Iso.leftInv ΩS¹Isoℤ = rewindFun base
 
 ΩS¹≡ℤ : ΩS¹ ≡ ℤ
